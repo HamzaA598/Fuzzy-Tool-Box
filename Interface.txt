@@ -11,6 +11,8 @@ system: name, desc, variables, rules.
 
 main handles console
 
+canonical form: upper-case
+
 validate that each fuzzy set is in range of its variable
 
 pass and not, two different words
