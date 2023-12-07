@@ -1,5 +1,5 @@
 class FuzzySystem:
-    def __init__(self, name, description):
+    def __init__(self, name, description) -> None:
         self.name = name
         self.description = description
         self.variables = []
@@ -7,12 +7,21 @@ class FuzzySystem:
         
     def add_variable():
         pass
+    
+    def add_fuzzy_set():
+        pass
+    
     def add_rule():
         pass
-    def add_set():
-        pass
 
 
+class Set:
+    def __init__(self, name, ftype, values):
+        self.name = name
+        self.type = ftype
+        self.values = values
+        self.center = sum(values) / len(values)
+        
 def main():
     print("Fuzzy Logic Toolbox")
     print("===================")
@@ -26,6 +35,8 @@ def main():
         fuzzy_system = FuzzySystem(system_name, system_description)
     else:
         return
+    
+    
 
 
 
