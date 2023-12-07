@@ -12,15 +12,33 @@ class variable:
         self.type = 0 if type.upper() == "IN" else 1
         self.range = v_range
         self.sets = []
-    
-    
+        
 class Set:
     def __init__(self, name, ftype, values):
         self.name = name
         self.type = ftype
         self.values = values
         self.center = sum(values) / len(values)
+        self.line_equations = self.calculate_line_equations()
         
+    def calculate_line_equations(self):
+        line_equations = []
+        for i in range(len(self.values) - 1):
+            x1, x2 = self.values[i], self.values[i + 1]
+            y1 = 0 if i == 0 else 1
+            y2 = 0 if i == len(self.values) - 2 else 1
+            
+            delta_y = y2 - y1
+            delta_x = x2 - x1
+
+            if delta_x == 0: # division by 0 -> slope undefined
+                line_equations.append((0, 0))
+                continue
+            
+            slope = delta_y / delta_x
+            intercept = y1 - slope * x1
+            line_equations.append((slope, intercept))
+        return line_equations
         
 class Rule:
     def __init__(self, in_tree, out_var, out_set):
@@ -38,7 +56,6 @@ class Rule:
             self.print_rule(node.left_child, level + 1)
             self.print_rule(node.right_child, level + 1)
 
- 
 class FuzzySystem:
     def __init__(self, name, description):
         self.name = name
@@ -109,8 +126,49 @@ class FuzzySystem:
         frule = Rule(root, rule_out[0], rule_out[1])
         self.rules.append(frule)
         
-    def run_simulation(self):
-        pass
+    def run_simulation(self, crisp_values):
+        # fuzzification
+        fuzzy_inputs = self.fuzzification(crisp_values)
+        # inference
+        self.inference()
+        # defuzzification
+        self.defuzzification()
+        
+    
+    def fuzzification(self, crisp_values):
+        # helper function to de-nest the code since it was
+        # so deeply nested and hurts me
+        def fuzzify_variable(var, value):
+            membership_values = {}
+            for fuzzy_set in var.sets:
+                i = -1
+                for slope, intercept in fuzzy_set.line_equations:   
+                    i += 1
+                    # the following if condition makes sure that the crisp value
+                    # is within the line points (x1, x2)
+                    # if it isnt then it check if the membership of the value was
+                    # calculated before if not then it sets it to zero otherwise leave it alone
+                    if not (fuzzy_set.values[i] <= value <= fuzzy_set.values[i+1]):
+                        if fuzzy_set.name in membership_values:
+                            membership = membership_values[fuzzy_set.name]
+                        else:
+                            membership = 0
+                        membership_values[fuzzy_set.name] = membership
+                        continue
+                    
+                    if slope * value + intercept >= 0:
+                        membership = max(0, min(1, slope * value + intercept))
+                        membership_values[fuzzy_set.name] = membership
+            return membership_values
+        
+        fuzzy_inputs = {}
+        for var_name, value in crisp_values.items():
+            var = self.variables[var_name]
+            if var.type == 1:
+                continue # don't need to fuzzify out variables i think?
+            fuzzy_inputs[var_name] = fuzzify_variable(var, value)
+        return fuzzy_inputs
+
 
 def main():
     print("Fuzzy Logic Toolbox")
@@ -166,6 +224,12 @@ def main():
             fuzzy_system.add_rule(rule_in, rule_out)
         elif user_input == "4":
             #todo crisp input and simulation
+            print("Enter the crisp values:")
+            crisp_values = {}
+            for variable in fuzzy_system.variables:
+                value = input(f"{variable.name}: ")
+                crisp_values[variable.name] = float(value)
+            fuzzy_system.run_simulation(crisp_values)
             break
 
 
