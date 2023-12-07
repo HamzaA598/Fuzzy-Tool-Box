@@ -1,0 +1,17 @@
+hamza: inference, defuzzification, add variables
+ziad: fuzzification, rules, add fuzzy sets
+
+use classes to add meaning to the structures
+
+classes:
+variable: name, type(in, out), tuple(range), sets
+set: name, type(TRI, TRAP), tuple(range)
+rule: list of lists, a list is either a condition or an operation
+system: name, desc, variables, rules.
+
+main handles console
+
+validate that each fuzzy set is in range of its variable
+
+pass and not, two different words
+
