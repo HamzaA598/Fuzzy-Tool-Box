@@ -4,6 +4,7 @@ class Node:
         self.value = value
         self.left_child = None
         self.right_child = None
+        # the set of the variable in the inference rule
         self.var_set = var_set
 
 class variable:
@@ -63,8 +64,9 @@ class FuzzySystem:
         self.variables = {}
         self.rules = []
         
-    def add_variable(self):
-        pass
+    def add_variable(self, variable_name, variable_type, variable_range):
+        new_variable = variable(variable_name, variable_type, variable_range)
+        self.variables[variable_name] = new_variable
     
     def add_fuzzy_set(self, var_name, set_name, set_type, set_values):
         var = self.variables[var_name]
@@ -87,7 +89,7 @@ class FuzzySystem:
         # define the operators and their precedence
         # not sure if and is first or or is first
         # currently assumes or is done first (lower in the tree)
-        operators = {'AND': 1, 'OR': 2}
+        operators = {'AND': 2, 'OR': 1}
 
         # function to create the syntax tree for the rule
         # checks for the operators first if there isn't one it create a terminal node
@@ -125,15 +127,6 @@ class FuzzySystem:
         #! ff @ 15 plz
         frule = Rule(root, rule_out[0], rule_out[1])
         self.rules.append(frule)
-        
-    def run_simulation(self, crisp_values):
-        # fuzzification
-        fuzzy_inputs = self.fuzzification(crisp_values)
-        # inference
-        self.inference()
-        # defuzzification
-        self.defuzzification()
-        
     
     def fuzzification(self, crisp_values):
         # helper function to de-nest the code since it was
@@ -168,6 +161,37 @@ class FuzzySystem:
                 continue # don't need to fuzzify out variables i think?
             fuzzy_inputs[var_name] = fuzzify_variable(var, value)
         return fuzzy_inputs
+    
+    def inference(self, fuzzy_inputs):
+        def parse(in_tree):
+            if in_tree.value == "and":
+                return min(parse(in_tree.left_child), parse(in_tree.right_child))
+            if in_tree.value == "or":
+                return max(parse(in_tree.left_child), parse(in_tree.right_child))
+        
+            # checkpoint
+            # return the membership degree of the variable name in set var_set
+            # return 
+
+        output_membership_degrees = {}
+        for rule in self.rules:
+            output_membership_degree = parse(rule)
+            if rule.out_var not in self.output_membership_degrees:
+                output_membership_degree[rule.out_var] = []
+            output_membership_degree[rule.out_var].append(output_membership_degree)
+
+        return output_membership_degrees
+    
+    def defuzzification(self):
+        pass
+    
+    def run_simulation(self, crisp_values):
+        # fuzzification
+        fuzzy_inputs = self.fuzzification(crisp_values)
+        # inference
+        output_membership_degrees = self.inference(fuzzy_inputs)
+        # defuzzification
+        self.defuzzification()
 
 
 def main():
@@ -197,8 +221,14 @@ def main():
         user_input = input()
         
         if user_input == "1":
-            #todo variables input
-            pass
+            print("Enter the variable’s name, type (IN/OUT) and range ([lower, upper]):\n(Press x to finish)")
+            new_variable = ""
+            while new_variable != "x":
+                new_variable = input().split()
+                variable_name, variable_type, *variable_range = new_variable
+                variable_range = eval(variable_range[0] + variable_range[1])
+                fuzzy_system.add_variable(variable_name, variable_type, variable_range)
+            
         elif user_input == "2":
             print("Enter the variable's name:")
             var_name = input()
@@ -222,6 +252,7 @@ def main():
             rule_in = rule[0].upper()
             rule_out = rule[1].upper()
             fuzzy_system.add_rule(rule_in, rule_out)
+
         elif user_input == "4":
             #todo crisp input and simulation
             print("Enter the crisp values:")

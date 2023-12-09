@@ -31,7 +31,7 @@ def add_rule(rule_in_str, rule_out_str):
     # define the operators and their precedence
     # not sure if and is first or or is first
     # currently assumes or is done first (lower in the tree)
-    operators = {'AND': 1, 'OR': 2}
+    operators = {'AND': 2, 'OR': 1}
 
     # function to create the syntax tree for the rule
     # checks for the operators first if there isn't one it create a terminal node
