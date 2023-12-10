@@ -21,7 +21,7 @@ class Set:
         self.name = name
         self.type = ftype
         self.values = values
-        self.centeroid = sum(values) / len(values)
+        self.center = sum(values) / len(values)
         self.line_equations = self.calculate_line_equations()
         
     def calculate_line_equations(self):
@@ -67,17 +67,16 @@ class FuzzySystem:
         # should i make a separate set for in and out?
         # should i make a separate set for out only and and all set for in and out?
         self.variables = {}
+        # handle: if there are multiple out variables this should be a list
+        self.output_variable = None
         self.rules = []
         
     def add_variable(self, variable_name, variable_type, variable_range):
         new_variable = variable(variable_name, variable_type, variable_range)
         self.variables[variable_name] = new_variable
+        self.output_variable = new_variable
     
     def add_fuzzy_set(self, var_name, set_name, set_type, set_values):
-        # handle: error when inputting a variable set
-        if var_name not in self.variables:
-            print("The provided variable is not recognized")
-            return
         var = self.variables[var_name]
         for value in set_values:
             if value < var.range[0] or value > var.range[1]:
@@ -133,6 +132,7 @@ class FuzzySystem:
         root = build_tree(tokens)
         
         # create rule and append it to list of rules
+        #! ff @ 15 plz
         frule = Rule(root, rule_out[0], rule_out[1])
         self.rules.append(frule)
     
@@ -176,10 +176,13 @@ class FuzzySystem:
                 return min(parse(in_tree.left_child), parse(in_tree.right_child))
             if in_tree.value == "or":
                 return max(parse(in_tree.left_child), parse(in_tree.right_child))
-        
+            # handle: assuming the variable name is "~ var"(notice the space)
+            if in_tree.value[0] == "~":
+                return 1-parse(in_tree.value[2:])
+            
             # handle: test
             # return the membership degree of the variable name in set var_set
-            return fuzzy_inputs[in_tree.var_name][in_tree.var_set]
+            return fuzzy_inputs[in_tree.value][in_tree.var_set]
 
         output_membership_degrees = {}
         for rule in self.rules:
@@ -197,7 +200,7 @@ class FuzzySystem:
         for out_var in output_membership_degrees:
             for var_set in out_var:
                 for membership_degree in var_set:
-                    total += self.variables[out_var][var_set].centroid * membership_degree
+                    total += self.variables[out_var][var_set].center * membership_degree
                     weights += membership_degree
         
         z = total / weights
@@ -285,7 +288,7 @@ def main():
             z = fuzzy_system.run_simulation(crisp_values)
             # handle: are there multiple outputs?
             # handle: need to get the out variables easily
-            print("The predicted " + handle + " is" + handle(set_name) + " " + z)
+            print("The predicted " + fuzzy_system.output_variable + " is" + handle(set_name) + " " + z)
             break
 
 
