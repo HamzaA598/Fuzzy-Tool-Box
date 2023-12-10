@@ -72,7 +72,8 @@ class FuzzySystem:
     def add_variable(self, variable_name, variable_type, variable_range):
         new_variable = variable(variable_name, variable_type, variable_range)
         self.variables[variable_name] = new_variable
-        self.output_variable = new_variable
+        if new_variable.type == 1:
+            self.output_variable = new_variable
     
     def add_fuzzy_set(self, var_name, set_name, set_type, set_values):
         var = self.variables[var_name]
@@ -206,7 +207,7 @@ class FuzzySystem:
         # get the set with the maximum membership
         membership_values = self.fuzzify_variable(self.output_variable, z)
         max_membership_degree, output_set = -1, ""
-        for current_set, membership_degree in membership_values:
+        for current_set, membership_degree in membership_values.items():
             if membership_degree > max_membership_degree:
                 max_membership_degree = membership_degree
                 output_set = current_set

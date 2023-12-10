@@ -72,7 +72,8 @@ class FuzzySystem:
     def add_variable(self, variable_name, variable_type, variable_range):
         new_variable = variable(variable_name, variable_type, variable_range)
         self.variables[variable_name] = new_variable
-        self.output_variable = new_variable
+        if new_variable.type == 1:
+            self.output_variable = new_variable
     
     def add_fuzzy_set(self, var_name, set_name, set_type, set_values):
         var = self.variables[var_name]
@@ -206,7 +207,7 @@ class FuzzySystem:
         # get the set with the maximum membership
         membership_values = self.fuzzify_variable(self.output_variable, z)
         max_membership_degree, output_set = -1, ""
-        for current_set, membership_degree in membership_values:
+        for current_set, membership_degree in membership_values.items():
             if membership_degree > max_membership_degree:
                 max_membership_degree = membership_degree
                 output_set = current_set
@@ -224,13 +225,9 @@ class FuzzySystem:
     
 fuzzy_system = FuzzySystem("Example System", "Testing fuzzy system")
 
-Dirt_variable = variable('Dirt', 'IN', (0, 100))
-Fabric_variable = variable('Fabric', 'IN', (0, 100))
-wash_variable = variable('Wash', 'OUT', (0, 60))
-
-fuzzy_system.variables['Dirt'] = Dirt_variable
-fuzzy_system.variables['Fabric'] = Fabric_variable
-fuzzy_system.variables['Wash'] = wash_variable
+fuzzy_system.add_variable('Dirt', 'IN', (0, 100))
+fuzzy_system.add_variable('Fabric', 'IN', (0, 100))
+fuzzy_system.add_variable('Wash', 'OUT', (0, 60))
 
 fuzzy_system.add_fuzzy_set('Dirt', 'Small', 'TRAP', [0, 0, 20, 40])
 fuzzy_system.add_fuzzy_set('Dirt', 'Medium', 'TRAP', [20, 40, 60, 80])
