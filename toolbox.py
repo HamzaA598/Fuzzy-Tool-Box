@@ -67,7 +67,6 @@ class FuzzySystem:
         # should i make a separate set for in and out?
         # should i make a separate set for out only and and all set for in and out?
         self.variables = {}
-        # handle: if there are multiple out variables this should be a list
         self.output_variable = None
         self.rules = []
         
@@ -172,13 +171,12 @@ class FuzzySystem:
     
     def inference(self, fuzzy_inputs):
         def parse(in_tree):
-            if in_tree.value == "and":
+            if in_tree.value == "AND":
                 return min(parse(in_tree.left_child), parse(in_tree.right_child))
-            if in_tree.value == "or":
+            if in_tree.value == "OR":
                 return max(parse(in_tree.left_child), parse(in_tree.right_child))
-            # handle: assuming the variable name is "~ var"(notice the space)
             if in_tree.value[0] == "~":
-                return 1-parse(in_tree.value[2:])
+                return 1-parse(in_tree.value[1:])
             
             # handle: test
             # return the membership degree of the variable name in set var_set
@@ -190,8 +188,8 @@ class FuzzySystem:
             if rule.out_var not in self.output_membership_degrees:
                 output_membership_degrees[rule.out_var] = {}
             if rule.var_set not in self.output_membership_degrees[rule.out_var]:
-                self.output_membership_degrees[rule.out_var][rule.var_set] = []
-            output_membership_degrees[rule.out_var][rule.var_set].append(output_membership_degree)
+                self.output_membership_degrees[rule.out_var][rule.out_set] = []
+            output_membership_degrees[rule.out_var][rule.out_set].append(output_membership_degree)
 
         return output_membership_degrees
     
@@ -212,7 +210,9 @@ class FuzzySystem:
         # inference
         output_membership_degrees = self.inference(fuzzy_inputs)
         # defuzzification
-        z = self.defuzzification()
+        z = self.defuzzification(output_membership_degrees)
+
+        
 
         return z
 
@@ -286,7 +286,6 @@ def main():
                 value = input(f"{variable.name}: ")
                 crisp_values[variable.name] = float(value)
             z = fuzzy_system.run_simulation(crisp_values)
-            # handle: are there multiple outputs?
             # handle: need to get the out variables easily
             print("The predicted " + fuzzy_system.output_variable + " is" + handle(set_name) + " " + z)
             break
