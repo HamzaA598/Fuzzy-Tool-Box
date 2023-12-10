@@ -1,5 +1,5 @@
 
-class Variable:
+class variable:
     def __init__(self, name, type, v_range):
         self.name = name
         self.type = 0 if type.upper() == "IN" else 1
@@ -99,29 +99,44 @@ class FuzzySystem:
 
 fuzzy_system = FuzzySystem("Example System", "Testing fuzzy system")
 
-Dirt_variable = Variable('Dirt', 'IN', (0, 100))
-Fabric_variable = Variable('Fabric', 'IN', (0, 100))
-wash_variable = Variable('Wash', 'OUT', (0, 60))
+Dirt_variable = variable('Dirt', 'IN', (0, 100))
+Fabric_variable = variable('Fabric', 'IN', (0, 100))
+wash_variable = variable('Wash', 'OUT', (0, 60))
 
 fuzzy_system.variables['Dirt'] = Dirt_variable
 fuzzy_system.variables['Fabric'] = Fabric_variable
-fuzzy_system.variables['Wash'] = Fabric_variable
+fuzzy_system.variables['Wash'] = wash_variable
 
 fuzzy_system.add_fuzzy_set('Dirt', 'Small', 'TRAP', [0, 0, 20, 40])
-fuzzy_system.add_fuzzy_set('Dirt', 'Med', 'TRAP', [20, 40, 60, 80])
+fuzzy_system.add_fuzzy_set('Dirt', 'Medium', 'TRAP', [20, 40, 60, 80])
 fuzzy_system.add_fuzzy_set('Dirt', 'Large', 'TRAP', [60, 80, 100, 100])
 
 fuzzy_system.add_fuzzy_set('Fabric', 'Soft', 'TRAP', [0, 0, 20, 40])
 fuzzy_system.add_fuzzy_set('Fabric', 'Ordinary', 'TRAP', [20, 40, 60, 80])
 fuzzy_system.add_fuzzy_set('Fabric', 'Stiff', 'TRAP', [60, 80, 100, 100])
 
-fuzzy_system.add_fuzzy_set('Wash', 'very small', 'TRAP', [0, 0, 15])
+fuzzy_system.add_fuzzy_set('Wash', 'very_small', 'TRAP', [0, 0, 15])
 fuzzy_system.add_fuzzy_set('Wash', 'small', 'TRAP', [0, 15, 30])
 fuzzy_system.add_fuzzy_set('Wash', 'standard', 'TRAP', [15, 30, 45])
 fuzzy_system.add_fuzzy_set('Wash', 'large', 'TRAP', [30, 45, 60])
-fuzzy_system.add_fuzzy_set('Wash', 'very large', 'TRAP', [45, 60, 60])
+fuzzy_system.add_fuzzy_set('Wash', 'very_large', 'TRAP', [45, 60, 60])
+
+rule_1 = "Dirt Small and Fabric Soft => Wash very_small".split("=>")
+rule_2 = "Dirt Medium and Fabric Ordinary => Wash standard".split("=>")
+rule_3 = "Dirt Small and not Fabric Soft or Dirt Medium and Fabric Soft => Wash small".split("=>")
+rule_4 = "Dirt Medium and Fabric Stiff => Wash large".split("=>")
+rule_5 = "Dirt Large and not Fabric Soft => Wash very_large".split("=>")
+rule_6 = "Dirt Large and Fabric Soft => Wash standard".split("=>")
+
+fuzzy_system.add_rule(rule_1[0], rule_1[1])
+fuzzy_system.add_rule(rule_2[0], rule_2[1])
+fuzzy_system.add_rule(rule_3[0], rule_3[1])
+fuzzy_system.add_rule(rule_4[0], rule_4[1])
+fuzzy_system.add_rule(rule_5[0], rule_5[1])
+fuzzy_system.add_rule(rule_6[0], rule_6[1])
+
 
 crisp_values = {'Dirt': 60, 'Fabric': 25}
 
-fuzzy_inputs = fuzzy_system.fuzzification(crisp_values)
+fuzzy_inputs = fuzzy_system.run_simulation(crisp_values)
 print(f"Fuzzy Inputs: {fuzzy_inputs}")

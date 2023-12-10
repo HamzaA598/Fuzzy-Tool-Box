@@ -140,7 +140,7 @@ class FuzzySystem:
         # so deeply nested and hurts me
         def fuzzify_variable(var, value):
             membership_values = {}
-            for fuzzy_set in var.sets:
+            for fuzzy_set in var.sets.values():
                 i = -1
                 for slope, intercept in fuzzy_set.line_equations:   
                     i += 1
