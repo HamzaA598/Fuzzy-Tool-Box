@@ -195,9 +195,10 @@ class FuzzySystem:
     def defuzzification(self, output_membership_degrees):
         total, weights = 0, 0
         for out_var in output_membership_degrees:
-            for var_set in out_var:
-                for membership_degree in var_set:
-                    total += self.variables[out_var][var_set].center * membership_degree
+            for var_set in output_membership_degrees[out_var]:
+                for membership_degree in output_membership_degrees[out_var][var_set]:
+                    print(self.variables[out_var].sets)
+                    total += (self.variables[out_var].sets)[var_set].center * membership_degree
                     weights += membership_degree
         
         z = total / weights
