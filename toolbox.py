@@ -7,10 +7,10 @@ class Node:
         # the set of the variable in the inference rule
         self.var_set = var_set
 
-class variable:
+class Variable:
     def __init__(self, name, type, v_range):
         self.name = name
-        self.type = 0 if type.upper() == "IN" else 1
+        self.type = 0 if type == "IN" else 1
         self.range = v_range
         # need it to be a set when defuzzifying
         # in order to retrieve the centroid of a specific set
@@ -70,7 +70,7 @@ class FuzzySystem:
         self.rules = []
         
     def add_variable(self, variable_name, variable_type, variable_range):
-        new_variable = variable(variable_name, variable_type, variable_range)
+        new_variable = Variable(variable_name, variable_type, variable_range)
         self.variables[variable_name] = new_variable
         if new_variable.type == 1:
             self.output_variable = new_variable
@@ -193,7 +193,6 @@ class FuzzySystem:
         for out_var in output_membership_degrees:
             for var_set in output_membership_degrees[out_var]:
                 for membership_degree in output_membership_degrees[out_var][var_set]:
-                    print(self.variables[out_var].sets)
                     total += (self.variables[out_var].sets)[var_set].center * membership_degree
                     weights += membership_degree
         
@@ -223,14 +222,14 @@ def main():
     print("===================")
     print("1- Create a new fuzzy system.")
     print("2- Quit.")
-    user_input = input()
+    user_input = input().upper()
     
     if user_input == "2":
         return
     
     print("Enter the system's name and a brief description:")
-    system_name = input()
-    system_description = input()
+    system_name = input().upper()
+    system_description = input().upper()
     fuzzy_system = FuzzySystem(system_name, system_description)
     
     while True:
@@ -242,13 +241,13 @@ def main():
         print("4- Run the simulation on crisp values.")
         print("-----------------------------")
         
-        user_input = input()
+        user_input = input().upper()
         
         if user_input == "1":
             print("Enter the variable's name, type (IN/OUT) and range ([lower, upper]):\n(Press x to finish)")
             while True:
-                new_variable = input()
-                if new_variable == "x":
+                new_variable = input().upper()
+                if new_variable == "X":
                     break
                 new_variable = new_variable.split()
                 variable_name, variable_type, *variable_range = new_variable
@@ -257,38 +256,97 @@ def main():
             
         elif user_input == "2":
             print("Enter the variable's name:")
-            var_name = input()
+            var_name = input().upper()
             print("Enter the fuzzy set name, type (TRI/TRAP), and values: (Press x to finish)")
             while True:
-                set_input = input().split()
-                if set_input[0] == 'x':
+                set_input = input().upper()
+                if set_input == "X":
                     break
+                set_input = set_input.split()
                 set_name, set_type, *set_values = set_input
                 set_values = list(map(int, set_values))
                 #! care for upper()!
-                fuzzy_system.add_fuzzy_set(var_name.upper(), set_name.upper(), set_type, set_values)
+                fuzzy_system.add_fuzzy_set(var_name, set_name, set_type, set_values)
         
         elif user_input == "3":
             print("Enter the rules in this format: (Press x to finish)")
             print("IN_variable set operator IN_variable set => OUT_variable set")
-            rule = input()
-            rule = rule.split('=>')
-            if rule[0] == "x":
-                break
-            rule_in = rule[0].upper()
-            rule_out = rule[1].upper()
-            fuzzy_system.add_rule(rule_in, rule_out)
+            while True:
+                rule = input().upper()
+                if rule == "X":
+                    break
+                rule = rule.split('=>')
+                rule_in = rule[0]
+                rule_out = rule[1]
+                fuzzy_system.add_rule(rule_in, rule_out)
 
         elif user_input == "4":
+            if not fuzzy_system.rules or not fuzzy_system.variables:
+                print("CAN’T START THE SIMULATION! Please add the fuzzy rules and variables first")
+                break
             print("Enter the crisp values:")
             crisp_values = {}
-            for variable in fuzzy_system.variables:
+            for variable in fuzzy_system.variables.values():
+                if variable.type == 1:
+                    continue
                 value = input(f"{variable.name}: ")
                 crisp_values[variable.name] = float(value)
             output_set, z = fuzzy_system.run_simulation(crisp_values)
-            print("The predicted " + fuzzy_system.output_variable + " is" + output_set + " " + "(" + z + ")")
+            print("The predicted " + fuzzy_system.output_variable.name + " is" + output_set + " " + "(" + z + ")")
             break
 
 
 if __name__ == "__main__":
     main()
+    
+    
+"""
+1
+Project Risk Estimation
+The problem is to estimate the risk level of a project based on the project funding and the technical experience of the project’s team members.
+
+1
+
+proj_funding IN [0, 100]
+exp_level IN [0, 60]
+risk OUT [0, 100]
+x
+
+2
+
+exp_level
+beginner TRI 0 15 30
+intermediate TRI 15 30 45
+expert TRI 30 60 60
+x
+
+2
+
+proj_funding
+very_low TRAP 0 0 10 30
+low TRAP 10 30 40 60
+medium TRAP 40 60 70 90
+high TRAP 70 90 100 100
+x
+
+2
+
+risk
+low TRI 0 25 50
+normal TRI 25 50 75
+high TRI 50 100 100
+x
+
+3
+
+proj_funding high or exp_level expert => risk low
+proj_funding medium and exp_level intermediate => risk normal
+proj_funding medium and exp_level beginner => risk normal
+proj_funding low and exp_level beginner => risk high
+proj_funding very_low and not exp_level expert => risk high
+x
+
+4
+50
+40
+"""
