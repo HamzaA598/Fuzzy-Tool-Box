@@ -135,38 +135,37 @@ class FuzzySystem:
         frule = Rule(root, rule_out[0], rule_out[1])
         self.rules.append(frule)
     
-    def fuzzification(self, crisp_values):
-        # helper function to de-nest the code since it was
-        # so deeply nested and hurts me
-        def fuzzify_variable(var, value):
-            membership_values = {}
-            for fuzzy_set in var.sets:
-                i = -1
-                for slope, intercept in fuzzy_set.line_equations:   
-                    i += 1
-                    # the following if condition makes sure that the crisp value
-                    # is within the line points (x1, x2)
-                    # if it isnt then it check if the membership of the value was
-                    # calculated before if not then it sets it to zero otherwise leave it alone
-                    if not (fuzzy_set.values[i] <= value <= fuzzy_set.values[i+1]):
-                        if fuzzy_set.name in membership_values:
-                            membership = membership_values[fuzzy_set.name]
-                        else:
-                            membership = 0
+    @staticmethod
+    def fuzzify_variable(var, value):
+        membership_values = {}
+        for fuzzy_set in var.sets.values():
+            i = -1
+            for slope, intercept in fuzzy_set.line_equations:   
+                i += 1
+                # the following if condition makes sure that the crisp value
+                # is within the line points (x1, x2)
+                # if it isnt then it check if the membership of the value was
+                # calculated before if not then it sets it to zero otherwise leave it alone
+                if not (fuzzy_set.values[i] <= value <= fuzzy_set.values[i+1]):
+                    if fuzzy_set.name in membership_values:
+                        membership = membership_values[fuzzy_set.name]
+                    else:
+                        membership = 0
                         membership_values[fuzzy_set.name] = membership
                         continue
                     
                     if slope * value + intercept >= 0:
                         membership = max(0, min(1, slope * value + intercept))
                         membership_values[fuzzy_set.name] = membership
-            return membership_values
-        
+        return membership_values
+    
+    def fuzzification(self, crisp_values):
         fuzzy_inputs = {}
         for var_name, value in crisp_values.items():
             var = self.variables[var_name]
             if var.type == 1:
                 continue # don't need to fuzzify out variables i think?
-            fuzzy_inputs[var_name] = fuzzify_variable(var, value)
+            fuzzy_inputs[var_name] = FuzzySystem.fuzzify_variable(var, value)
         return fuzzy_inputs
     
     def inference(self, fuzzy_inputs):
@@ -221,7 +220,6 @@ class FuzzySystem:
         output_set, z = self.defuzzification(output_membership_degrees)
 
         return output_set, z
-
 
 def main():
     print("Fuzzy Logic Toolbox")
