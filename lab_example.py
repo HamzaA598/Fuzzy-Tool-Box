@@ -4,7 +4,7 @@ class variable:
         self.name = name
         self.type = 0 if type.upper() == "IN" else 1
         self.range = v_range
-        self.sets = []
+        self.sets = {}
 
 class Set:
     def __init__(self, name, ftype, values):
@@ -68,7 +68,7 @@ class FuzzySystem:
         # so deeply nested and hurts me
         def fuzzify_variable(var, value):
             membership_values = {}
-            for fuzzy_set in var.sets:
+            for fuzzy_set in var.sets.values():
                 i = -1
                 for slope, intercept in fuzzy_set.line_equations:   
                     i += 1
@@ -121,22 +121,22 @@ fuzzy_system.add_fuzzy_set('Wash', 'standard', 'TRAP', [15, 30, 45])
 fuzzy_system.add_fuzzy_set('Wash', 'large', 'TRAP', [30, 45, 60])
 fuzzy_system.add_fuzzy_set('Wash', 'very_large', 'TRAP', [45, 60, 60])
 
-rule_1 = "Dirt Small and Fabric Soft => Wash very_small".split("=>")
-rule_2 = "Dirt Medium and Fabric Ordinary => Wash standard".split("=>")
-rule_3 = "Dirt Small and not Fabric Soft or Dirt Medium and Fabric Soft => Wash small".split("=>")
-rule_4 = "Dirt Medium and Fabric Stiff => Wash large".split("=>")
-rule_5 = "Dirt Large and not Fabric Soft => Wash very_large".split("=>")
-rule_6 = "Dirt Large and Fabric Soft => Wash standard".split("=>")
+# rule_1 = "Dirt Small and Fabric Soft => Wash very_small".split("=>")
+# rule_2 = "Dirt Medium and Fabric Ordinary => Wash standard".split("=>")
+# rule_3 = "Dirt Small and not Fabric Soft or Dirt Medium and Fabric Soft => Wash small".split("=>")
+# rule_4 = "Dirt Medium and Fabric Stiff => Wash large".split("=>")
+# rule_5 = "Dirt Large and not Fabric Soft => Wash very_large".split("=>")
+# rule_6 = "Dirt Large and Fabric Soft => Wash standard".split("=>")
 
-fuzzy_system.add_rule(rule_1[0], rule_1[1])
-fuzzy_system.add_rule(rule_2[0], rule_2[1])
-fuzzy_system.add_rule(rule_3[0], rule_3[1])
-fuzzy_system.add_rule(rule_4[0], rule_4[1])
-fuzzy_system.add_rule(rule_5[0], rule_5[1])
-fuzzy_system.add_rule(rule_6[0], rule_6[1])
+# fuzzy_system.add_rule(rule_1[0], rule_1[1])
+# fuzzy_system.add_rule(rule_2[0], rule_2[1])
+# fuzzy_system.add_rule(rule_3[0], rule_3[1])
+# fuzzy_system.add_rule(rule_4[0], rule_4[1])
+# fuzzy_system.add_rule(rule_5[0], rule_5[1])
+# fuzzy_system.add_rule(rule_6[0], rule_6[1])
 
 
 crisp_values = {'Dirt': 60, 'Fabric': 25}
 
-fuzzy_inputs = fuzzy_system.run_simulation(crisp_values)
+fuzzy_inputs = fuzzy_system.fuzzification(crisp_values)
 print(f"Fuzzy Inputs: {fuzzy_inputs}")

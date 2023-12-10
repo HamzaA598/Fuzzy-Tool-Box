@@ -89,14 +89,14 @@ class FuzzySystem:
     #! add_rule function creates a syntax tree for the rule evaluation
     #! check test.py for testing the rule creation with examples
     def add_rule(self, rule_in_str, rule_out_str):
-        rule_in_str = rule_in_str.replace('NOT ', '~')
+        rule_in_str = rule_in_str.replace('not ', '~')
         rule_out = rule_out_str.split()
         tokens = rule_in_str.split()
 
         # define the operators and their precedence
         # not sure if and is first or or is first
         # currently assumes or is done first (lower in the tree)
-        operators = {'AND': 2, 'OR': 1}
+        operators = {'and': 2, 'or': 1}
 
         # function to create the syntax tree for the rule
         # checks for the operators first if there isn't one it create a terminal node
@@ -151,12 +151,12 @@ class FuzzySystem:
                         membership = membership_values[fuzzy_set.name]
                     else:
                         membership = 0
-                        membership_values[fuzzy_set.name] = membership
-                        continue
+                    membership_values[fuzzy_set.name] = membership
+                    continue
                     
-                    if slope * value + intercept >= 0:
-                        membership = max(0, min(1, slope * value + intercept))
-                        membership_values[fuzzy_set.name] = membership
+                if slope * value + intercept >= 0:
+                    membership = max(0, min(1, slope * value + intercept))
+                    membership_values[fuzzy_set.name] = membership
         return membership_values
     
     def fuzzification(self, crisp_values):
@@ -171,13 +171,13 @@ class FuzzySystem:
     def inference(self, fuzzy_inputs):
         # it is a rule not a node
         def parse(in_tree):
-            if in_tree.value == "AND":
-                return min(parse(in_tree.left_child), parse(in_tree.right_child))
-            if in_tree.value == "OR":
-                return max(parse(in_tree.left_child), parse(in_tree.right_child))
             if in_tree.value[0] == "~":
-                return 1-parse(in_tree.value[1:])
-            
+                return 1-fuzzy_inputs[in_tree.value[1:]][in_tree.var_set]
+            if in_tree.value == "and":
+                return min(parse(in_tree.left_child), parse(in_tree.right_child))
+            if in_tree.value == "or":
+                return max(parse(in_tree.left_child), parse(in_tree.right_child))
+
             # handle: test
             # return the membership degree of the variable name in set var_set
             return fuzzy_inputs[in_tree.value][in_tree.var_set]

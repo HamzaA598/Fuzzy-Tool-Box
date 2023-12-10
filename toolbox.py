@@ -84,10 +84,7 @@ class FuzzySystem:
         fset = Set(set_name, set_type, set_values)
         var.sets[set_name] = fset
     
-    #! is this correct????????????????
-    #! not sure if overcomplicating or not
     #! add_rule function creates a syntax tree for the rule evaluation
-    #! check test.py for testing the rule creation with examples
     def add_rule(self, rule_in_str, rule_out_str):
         rule_in_str = rule_in_str.replace('NOT ', '~')
         rule_out = rule_out_str.split()
@@ -131,7 +128,6 @@ class FuzzySystem:
         root = build_tree(tokens)
         
         # create rule and append it to list of rules
-        #! ff @ 15 plz
         frule = Rule(root, rule_out[0], rule_out[1])
         self.rules.append(frule)
     
@@ -151,12 +147,12 @@ class FuzzySystem:
                         membership = membership_values[fuzzy_set.name]
                     else:
                         membership = 0
-                        membership_values[fuzzy_set.name] = membership
-                        continue
+                    membership_values[fuzzy_set.name] = membership
+                    continue
                     
-                    if slope * value + intercept >= 0:
-                        membership = max(0, min(1, slope * value + intercept))
-                        membership_values[fuzzy_set.name] = membership
+                if slope * value + intercept >= 0:
+                    membership = max(0, min(1, slope * value + intercept))
+                    membership_values[fuzzy_set.name] = membership
         return membership_values
     
     def fuzzification(self, crisp_values):
@@ -164,21 +160,20 @@ class FuzzySystem:
         for var_name, value in crisp_values.items():
             var = self.variables[var_name]
             if var.type == 1:
-                continue # don't need to fuzzify out variables i think?
+                continue # don't need to fuzzify out variables
             fuzzy_inputs[var_name] = FuzzySystem.fuzzify_variable(var, value)
         return fuzzy_inputs
     
     def inference(self, fuzzy_inputs):
         # it is a rule not a node
         def parse(in_tree):
+            if in_tree.value[0] == "~":
+                return 1-fuzzy_inputs[in_tree.value[1:]][in_tree.var_set]
             if in_tree.value == "AND":
                 return min(parse(in_tree.left_child), parse(in_tree.right_child))
             if in_tree.value == "OR":
                 return max(parse(in_tree.left_child), parse(in_tree.right_child))
-            if in_tree.value[0] == "~":
-                return 1-parse(in_tree.value[1:])
-            
-            # handle: test
+
             # return the membership degree of the variable name in set var_set
             return fuzzy_inputs[in_tree.value][in_tree.var_set]
 
@@ -250,7 +245,7 @@ def main():
         user_input = input()
         
         if user_input == "1":
-            print("Enter the variable’s name, type (IN/OUT) and range ([lower, upper]):\n(Press x to finish)")
+            print("Enter the variable's name, type (IN/OUT) and range ([lower, upper]):\n(Press x to finish)")
             while True:
                 new_variable = input()
                 if new_variable == "x":
