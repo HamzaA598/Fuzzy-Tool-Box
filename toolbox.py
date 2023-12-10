@@ -140,7 +140,7 @@ class FuzzySystem:
         # so deeply nested and hurts me
         def fuzzify_variable(var, value):
             membership_values = {}
-            for fuzzy_set in var.sets.values():
+            for fuzzy_set in var.sets:
                 i = -1
                 for slope, intercept in fuzzy_set.line_equations:   
                     i += 1
@@ -202,7 +202,15 @@ class FuzzySystem:
                     weights += membership_degree
         
         z = total / weights
-        return z
+
+        # get the set with the maximum membership
+        membership_values = self.fuzzify_variable(self.output_variable, z)
+        max_membership_degree, output_set = -1, ""
+        for current_set, membership_degree in membership_values:
+            if membership_degree > max_membership_degree:
+                max_membership_degree = membership_degree
+                output_set = current_set
+        return output_set, z
     
     def run_simulation(self, crisp_values):
         # fuzzification
@@ -210,11 +218,9 @@ class FuzzySystem:
         # inference
         output_membership_degrees = self.inference(fuzzy_inputs)
         # defuzzification
-        z = self.defuzzification(output_membership_degrees)
+        output_set, z = self.defuzzification(output_membership_degrees)
 
-        
-
-        return z
+        return output_set, z
 
 
 def main():
@@ -285,9 +291,9 @@ def main():
             for variable in fuzzy_system.variables:
                 value = input(f"{variable.name}: ")
                 crisp_values[variable.name] = float(value)
-            z = fuzzy_system.run_simulation(crisp_values)
+            output_set, z = fuzzy_system.run_simulation(crisp_values)
             # handle: need to get the out variables easily
-            print("The predicted " + fuzzy_system.output_variable + " is" + handle(set_name) + " " + z)
+            print("The predicted " + fuzzy_system.output_variable + " is" + output_set + " " + "(" + z + ")")
             break
 
 
