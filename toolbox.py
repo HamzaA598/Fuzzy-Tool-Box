@@ -21,7 +21,7 @@ class Set:
         self.name = name
         self.type = ftype
         self.values = values
-        self.center = sum(values) / len(values)
+        self.centroid = sum(values) / len(values)
         self.line_equations = self.calculate_line_equations()
         
     def calculate_line_equations(self):
@@ -79,8 +79,7 @@ class FuzzySystem:
         var = self.variables[var_name]
         for value in set_values:
             if value < var.range[0] or value > var.range[1]:
-                #todo SHOW ERROR SOMEHOW
-                pass
+                raise ValueError("fuzzy set values are not compatible with the variable range")
         fset = Set(set_name, set_type, set_values)
         var.sets[set_name] = fset
     
@@ -193,7 +192,7 @@ class FuzzySystem:
         for out_var in output_membership_degrees:
             for var_set in output_membership_degrees[out_var]:
                 for membership_degree in output_membership_degrees[out_var][var_set]:
-                    total += (self.variables[out_var].sets)[var_set].center * membership_degree
+                    total += (self.variables[out_var].sets)[var_set].centroid * membership_degree
                     weights += membership_degree
         
         z = total / weights
