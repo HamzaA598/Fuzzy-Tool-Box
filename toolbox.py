@@ -291,7 +291,7 @@ def main():
                 value = input(f"{variable.name}: ")
                 crisp_values[variable.name] = float(value)
             output_set, z = fuzzy_system.run_simulation(crisp_values)
-            print("The predicted " + fuzzy_system.output_variable.name + " is" + output_set + " " + "(" + z + ")")
+            print("The predicted " + fuzzy_system.output_variable.name + " is " + output_set + " " + "(" + str(z) + ")")
             break
 
 
@@ -349,3 +349,54 @@ x
 50
 40
 """
+
+'''
+1
+Project Risk Estimation
+The problem is to estimate the risk funding and the technical experience of the project’s team members.
+
+1
+proj_funding IN [0, 100]
+exp_level IN [0, 60]
+duration IN [0, 80]
+risk OUT [0, 100]
+x
+2
+exp_level
+beginner TRI 0 15 30
+intermediate TRI 15 30 45
+expert TRI 30 60 60
+x
+2
+proj_funding
+very_low TRAP 0 0 10 30
+low TRAP 10 30 40 60
+medium TRAP 40 60 70 90
+high TRAP 70 90 100 100
+x
+2
+duration
+very_low TRI 0 15 30
+low TRAP 15 30 45 45
+medium TRI 30 45 50
+long TRAP 50 60 70 80
+x
+2
+risk
+low TRI 0 25 50
+normal TRI 25 50 75
+high TRI 50 100 100
+x
+3
+proj_funding high or exp_level expert and not duration very_low => risk low
+proj_funding medium and exp_level intermediate or not duration low or duration low and proj_funding high => risk normal
+proj_funding medium and exp_level beginner and not duration medium => risk normal
+proj_funding low and exp_level beginner or duration long and proj_funding high => risk high
+proj_funding very_low and not exp_level expert => risk high
+x
+
+4
+42
+17
+32
+'''
